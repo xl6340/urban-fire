@@ -1,0 +1,17 @@
+LandCover,FireType,Decade,Human_Count,Natural_Count,Total_Count
+Forest,Urban-edge,1990s,42,14,86
+Forest,Urban-edge,2000s,52,25,84
+Forest,Urban-edge,2010s,68,22,110
+Forest,Urban-edge,2020s,17,18,58
+Forest,Wildland,1990s,44,73,175
+Forest,Wildland,2000s,64,174,251
+Forest,Wildland,2010s,45,93,151
+Forest,Wildland,2020s,11,31,67
+ShrubGrass,Urban-edge,1990s,132,12,245
+ShrubGrass,Urban-edge,2000s,156,19,229
+ShrubGrass,Urban-edge,2010s,114,15,183
+ShrubGrass,Urban-edge,2020s,29,9,93
+ShrubGrass,Wildland,1990s,188,60,361
+ShrubGrass,Wildland,2000s,204,124,377
+ShrubGrass,Wildland,2010s,136,86,276
+ShrubGrass,Wildland,2020s,64,40,173
