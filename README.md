@@ -6,4 +6,4 @@ Repository Structure
 DtPro.m — Main MATLAB script for data processing
 Fig1.m ~ Fig5.m — MATLAB scripts for generating figures
 dataFig/ — Data files used for figure generation
-GEE/ — Google Earth Engine scripts for extracting environmental variables (land cover, NDVI, elevation, slope, temperature, VPD, precipitation, wind speed)
+GEE/ — Google Earth Engine scripts for extracting environmental variables (land cover, NDVI, elevation)
