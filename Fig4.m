@@ -1,44 +1,104 @@
+%% Fig. 5A, trend
 clear;clc;
 
-elevations = readmatrix('dataFig/elevation/elevations.csv');
-eleCenters = readmatrix('dataFig/elevation/eleCenters.csv');
+FireType = {'Urban-edge','Wildland'};   nFire = numel(FireType);
+FireTypeLabel = {'WUI fire','Wildland fire'}; 
+igType   = {'Human', 'Natural'};        nIg      = numel(igType);
+varList = {'Fire number', 'Burned area'};
+var      = {'count', 'area'};           nVar = numel(var);  
+colors = {'#fdd85d', '#99d6ea'};
 
-figure; clf; set(gcf, 'Position', [100, 50, 600, 600]); 
-t = tiledlayout(3, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
-colors = {[216, 118, 89]/255; [41, 157, 143]/255}; % Orange, Teal
+yLable = {'Fire number (#)', 'Burned area (10^3 km^2)'};
+figure('Position', [100, 100, 500, 350], 'Color', 'w');
+t = tiledlayout(2, 2, 'TileSpacing', 'compact', 'Padding', 'compact'); 
+for i = 1:nVar
+    for j = 1:nFire
+        ax = nexttile(t); hold on;  
+        data = readtable(sprintf('dataFig/ba/%s-%s.csv', var{i}, FireType{j}));
+        x = data.Row; 
+        xfit = linspace(min(x), max(x), 100)';
+        x_design = [ones(size(x)), x];
+        for k = 1:nIg
+            y = data.(igType{k});
+            if i == 2, y = y./1000; end
+            thisColor = colors{k};
+            [b,~,~,~,stats] = regress(y, x_design);
+            yfit = b(1) + b(2) * xfit;
+            plot(x, y, '-o', 'Color', thisColor, ...
+                    'MarkerFaceColor', thisColor, 'MarkerSize', 4, ...
+                    'LineWidth', 0.01, 'DisplayName', igType{k});
+            hold on;
+            if stats(3) < 0.01
+                plot(xfit, yfit, '-', 'Color', [0.7 0.7 0.7], 'HandleVisibility', 'off');           
+            end   
 
-% elevation histogram
-ax1 = nexttile; hold(ax1, 'on');
-histogram(ax1, elevations, 40, 'Normalization', 'pdf', ...
-    'FaceColor', '#7785ac', 'EdgeColor', [0.9 0.9 0.9], 'FaceAlpha', 0.4);
-for k = 1:length(eleCenters)
-    xline(ax1, eleCenters(k),'LineStyle', '-.','Color', '#7209b7','LineWidth', 1.5);
+            xlim([1990 2025]); xticks(1990:5:2025);xtickangle(30);  
+
+            if j == 1, txtY = 0.4; ylabel(sprintf(yLable{i}));
+            else, txtY = 0.6; yticklabels([]);end
+
+            if i == 1
+                ylim([0 400]);
+                title(FireTypeLabel{j}, 'FontWeight','normal');xticklabels([]); 
+                if stats(3) < 0.01
+                text(0.2, txtY, sprintf('s = %.2f', b(2)), ...
+                    'Interpreter','none','Units','normalized','Color','k','FontSize',10);
+                end
+            else 
+                ylim([0 12]); yticks(0:4:12); 
+                if j == 2, legend({'Human ignited', 'Natural ignited'}, 'Box','off', 'Location','northeast'); end 
+                if stats(3) < 0.01
+                    text(0.2, txtY, sprintf('$s = %.1f$', b(2)*1000),'Interpreter', 'latex', ...
+                        'Units','normalized','Color','k','FontSize',10); 
+                end
+            end
+             
+        end
+    end
 end
-xlim([0 3000]);
-ylabel(ax1, 'Probability density', 'FontSize', 11);
-set(ax1, 'Box', 'off', 'TickDir', 'out', 'LineWidth', 1);
+fontsize(gcf, 9, "points");
+exportgraphics(gcf,'Fig/Fig5A.pdf');
+%% Fig.5B, beta, ignition, firetype
+figure; clf; 
 
-% beta and climate variables
-Vars = {'beta', 'VPDmax', 'Tmean', 'Tmin', 'Tmax'}; nVar = numel(Vars);
-yLabels   = {'\beta value', 'VPD_{max} (kPa)', 'T_{mean} (°C)', 'T_{min} (°C)', 'T_{max} (°C)'};
-ylims     = {[-1.6 -0.8], [2 5], [15 25], [8 16], [20 35]};
-yTickVals = {-1.6:0.2:-0.8, 2:1:5, 15:5:25, 8:4:16, 20:5:35};
-for k = 1:nVar
-    ax = nexttile; hold(ax, 'on');
-    data = readtable(sprintf('dataFig/elevation/%s.csv', Vars{k}));
-    % Urban
-    errorbar(ax, eleCenters, data.Mean_Urban_edge, data.Err_Urban_edge, '-o', ...
-        'Color', colors{1},'MarkerSize', 5, 'MarkerFaceColor', colors{1});
-    
-    % Wildland
-    errorbar(ax, eleCenters, data.Mean_Wildland, data.Err_Wildland, '-^', ...
-        'Color', colors{2},'MarkerSize', 5, 'MarkerFaceColor', colors{2});
-    
-    if k >3, xlabel(ax, 'Elevation (m)', 'FontSize', 11);end
-    ylabel(ax, yLabels{k}, 'FontSize', 11);
-    set(ax, 'Box', 'off', 'TickDir', 'out');
-    xlim(ax, [0 3000]);
-    ylim(ax, ylims{k});
-    yticks(ax, yTickVals{k});
+FireTypeLabel = {'Wildland','WUI'}; 
+set(gcf, 'Position', [100, 100, 250, 150]); 
+hold on; 
+yPos = nFire:-1:1;
+for j = 1:nFire
+    data = readtable(sprintf('dataFig/beta/2Igns-%s.csv', FireType{j}));
+    bVals = data.beta;     
+    bErrs = data.betaErr;
+    plot([bVals(1, 1), bVals(2, 1)], [yPos(j), yPos(j)], ...
+        '-', 'Color', [0.7, 0.7, 0.7], 'LineWidth', 1, 'HandleVisibility', 'off');    
+    for i = 1:nIg
+        thisColor = colors{i};
+        if j == 1, lbl = igType{i}; handVis = 'on';
+        else, lbl = '';handVis = 'off';end
+        errorbar(bVals(i, 1), yPos(j), bErrs(i, 1), 'horizontal', ...
+            'LineStyle', 'none', ...      
+            'Marker', 'o', 'MarkerSize', 4, 'MarkerFaceColor', thisColor, ...
+            'Color', thisColor, 'LineWidth', 1.5, 'CapSize', 6, ...
+            'DisplayName', lbl, 'HandleVisibility', handVis);
+    end
 end
-exportgraphics(gcf, 'Fig/Fig4.pdf');
+set(gca, 'YTick', 1:nFire, 'YTickLabel', FireTypeLabel, 'FontSize', 9); 
+ylim([0.5, nFire + 0.5]); 
+xlabel('$\beta$ value', 'Interpreter', 'latex', 'FontSize', 11);
+xlim([-1.8, -1]); 
+xticks(-1.8:0.2:-1);
+% legend('Location', 'best', 'Box', 'off');
+hold off;
+exportgraphics(gcf,'Fig/Fig5B.pdf');
+%% Fig.5C,facility density
+clear;clc;
+facility = readtable('dataFig/facility.xlsx');
+landscape = facility.landscape;
+density = facility.density;
+figure; clf; 
+set(gcf, 'Position', [100, 100, 250, 150]); 
+barh(landscape, density, 'FaceColor', '#f2e9e4');
+set(gca, 'XTick', 0:4, 'FontSize', 9, 'YDir', 'reverse'); 
+xlabel('Facility density (#/100-km^2)');
+box off; hold off;
+exportgraphics(gcf,'Fig/Fig5C.pdf');

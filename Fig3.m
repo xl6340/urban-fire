@@ -1,177 +1,193 @@
-%% Fig. 5A: z-score
+%% Fig. 3B: z-score dot plot, split into Forest and ShrubGrass subplots
 clear; clc;
 
-varNames  = {'ignition','elevation','slope', 'ndviM', 'vs', 'ppt', 'tmax', 'tmin', 'tmean', 'vpdmax'};
-xLabels   = {'Human','Elevation', 'Slope', 'NDVI', 'Wind', 'P', 'T_{max}', 'T_{min}', 'T_{mean}', 'VPD_{max}'};
+varNames  = {'ignition','elevation','slope','ndviM','vs','ppt','tmax','tmin','tmean','vpdmax'};
+xLabels   = {'%Human','Elevation','Slope','NDVI','Wind','P','T_{max}','T_{min}','T_{mean}','VPD_{max}'};
 
-nVars     = numel(varNames);
-lc        = {'Forest', 'ShrubGrass'};
-fireType  = {'Urban-edge','Wildland'};
+catColors = containers.Map(...
+    {'vpdmax','tmean','tmin','tmax','ppt','vs','ndviM','slope','elevation','ignition'}, ...
+    {[246,198,175]/255, [246,198,175]/255, [246,198,175]/255, ...
+     [246,198,175]/255, [246,198,175]/255, [246,198,175]/255, ...
+     [181,212,190]/255, ...
+     [175,212,227]/255, [175,212,227]/255, ...
+     [184,185,210]/255});
 
-cForest = [50, 100, 50]/255;    % Dark Green (Forest)
-cShrub  = [100, 180, 100]/255;  % Light Green (Shrub)
+nVars    = numel(varNames);
+lc       = {'Forest','ShrubGrass'};
+fireType = {'Urban-edge','Wildland'};
 
-Data.Forest.Urban = table(); Data.Forest.Wild  = table();
-Data.Shrub.Urban  = table(); Data.Shrub.Wild   = table();
+% Load data
+Data.Forest.Urban = table(); Data.Forest.Wild = table();
+Data.Shrub.Urban  = table(); Data.Shrub.Wild  = table();
 for i = 1:numel(lc)
     for j = 1:numel(fireType)
         tmp = readtable(sprintf('dataFig/variable/%s_%s.csv', lc{i}, fireType{j}));
-        if strcmp(lc{i}, 'Forest') && strcmp(fireType{j}, 'Urban-edge')
+        if strcmp(lc{i},'Forest') && strcmp(fireType{j},'Urban-edge')
             Data.Forest.Urban = [Data.Forest.Urban; tmp];
-        elseif strcmp(lc{i}, 'Forest') && strcmp(fireType{j}, 'Wildland')
-            Data.Forest.Wild = [Data.Forest.Wild; tmp];
-        elseif strcmp(lc{i}, 'ShrubGrass') && strcmp(fireType{j}, 'Urban-edge')
-            Data.Shrub.Urban = [Data.Shrub.Urban; tmp];
-        elseif strcmp(lc{i}, 'ShrubGrass') && strcmp(fireType{j}, 'Wildland')
-            Data.Shrub.Wild = [Data.Shrub.Wild; tmp];
+        elseif strcmp(lc{i},'Forest') && strcmp(fireType{j},'Wildland')
+            Data.Forest.Wild  = [Data.Forest.Wild;  tmp];
+        elseif strcmp(lc{i},'ShrubGrass') && strcmp(fireType{j},'Urban-edge')
+            Data.Shrub.Urban  = [Data.Shrub.Urban;  tmp];
+        elseif strcmp(lc{i},'ShrubGrass') && strcmp(fireType{j},'Wildland')
+            Data.Shrub.Wild   = [Data.Shrub.Wild;   tmp];
         end
     end
 end
 
-stats = zeros(nVars, 4); 
-pVals = zeros(nVars, 2); 
+% Compute z-scores and p-values
+stats = zeros(nVars, 4);
+pVals = zeros(nVars, 2);
 for i = 1:nVars
     vName = varNames{i};
-    % Forest
-    uVec = Data.Forest.Urban.(vName); uVec = uVec(~isnan(uVec));
-    wVec = Data.Forest.Wild.(vName);  wVec = wVec(~isnan(wVec));
-    mu = mean(wVec); sigma = std(wVec);
-    % Safety check for constant variables (avoid div by zero)
-    if sigma == 0, sigma = 1; end 
-    zScores = (uVec - mu) / sigma;    
-    stats(i, 1) = mean(zScores);
-    stats(i, 2) = std(zScores) / sqrt(length(zScores));
-    [~, p] = ttest2(uVec, wVec, 'Vartype','unequal');
-    pVals(i, 1) = p;
-    
-    % Shrub
-    uVec = Data.Shrub.Urban.(vName); uVec = uVec(~isnan(uVec));
-    wVec = Data.Shrub.Wild.(vName);  wVec = wVec(~isnan(wVec));    
-    mu = mean(wVec); sigma = std(wVec);    
-    if sigma == 0, sigma = 1; end
-    zScores = (uVec - mu) / sigma;    
-    stats(i, 3) = mean(zScores);
-    stats(i, 4) = std(zScores) / sqrt(length(zScores));    
-    [~, p] = ttest2(uVec, wVec, 'Vartype','unequal');
-    pVals(i, 2) = p;
+    for k = 1:2
+        if k == 1
+            uVec = Data.Forest.Urban.(vName); uVec = uVec(~isnan(uVec));
+            wVec = Data.Forest.Wild.(vName);  wVec = wVec(~isnan(wVec));
+        else
+            uVec = Data.Shrub.Urban.(vName);  uVec = uVec(~isnan(uVec));
+            wVec = Data.Shrub.Wild.(vName);   wVec = wVec(~isnan(wVec));
+        end
+        mu = mean(wVec); sigma = std(wVec);
+        if sigma == 0, sigma = 1; end
+        zScores = (uVec - mu) / sigma;
+        stats(i, (k-1)*2+1) = mean(zScores);
+        stats(i, (k-1)*2+2) = std(zScores) / sqrt(length(zScores));
+        [~, p] = ttest2(uVec, wVec, 'Vartype','unequal');
+        pVals(i, k) = p;
+    end
 end
 
-% Plotting 
-figure('Position', [100, 100, 500, 500]); 
-hold on;
-for i = 0:nVars
-    yline(i + 0.5, '-', 'Color', [0.9 0.9 0.9], 'LineWidth', 1);
-end
-b = barh(stats(:, [1, 3]), 1, 'grouped');
-b(1).FaceColor = cForest; b(1).EdgeColor = 'none';
-b(2).FaceColor = cShrub;  b(2).EdgeColor = 'none';
-ngroups = nVars;
-nbars = 2;
-groupwidth = min(0.8, nbars/(nbars + 1.5));
-for i = 1:nbars
-    y = (1:ngroups) - groupwidth/2 + (2*i-1) * groupwidth / (2*nbars);
-    meanVal = stats(:, (i-1)*2 + 1);
-    seVal   = stats(:, (i-1)*2 + 2);
-    pVal    = pVals(:, i);
-    
-    errorbar(meanVal, y, seVal, 'horizontal', 'k', ...
-        'linestyle', 'none', 'LineWidth', 1, 'CapSize', 6);
-    
-    for j = 1:ngroups
+% Sort by mean z-score descending
+[~, idxForest] = sort(stats(:,1), 'descend');
+[~, idxShrub]  = sort(stats(:,3), 'descend');
+
+% Plotting
+figure('Position', [100, 100, 800, 420]);
+ax(1) = axes('Position', [0.08, 0.32, 0.40, 0.61]);
+ax(2) = axes('Position', [0.50, 0.32, 0.40, 0.61]);
+
+titles   = {'Forest', 'Shrub & Grassland'};
+sortIdx  = {idxForest, idxShrub};
+ecoIdx   = {1, 2};
+
+for panel = 1:2
+    axes(ax(panel));
+    hold on;
+
+    idx      = sortIdx{panel};
+    eco      = ecoIdx{panel};
+    labs     = xLabels(idx);
+    vars     = varNames(idx);
+    meanVals = stats(idx, (eco-1)*2+1);
+    seVals   = stats(idx, (eco-1)*2+2);
+    pV       = pVals(idx, eco);
+
+    % Light background alternating columns for readability
+    for i = 1:2:nVars
+        patch([i-0.5, i+0.5, i+0.5, i-0.5], [-4, -4, 4, 4], ...
+            [0.96 0.96 0.96], 'EdgeColor', 'none', 'FaceAlpha', 0.6);
+    end
+
+    % Zero line
+    yline(0, '-', 'Color', [0.4 0.4 0.4], 'LineWidth', 0.8);
+
+    % Dot + CI for each variable
+    for i = 1:nVars
+        clr = catColors(vars{i});
+        ci  = 1.96 * seVals(i);
+
+        % Vertical CI line
+        plot([i i], [meanVals(i)-ci, meanVals(i)+ci], '-', ...
+            'Color', [0.35 0.35 0.35], 'LineWidth', 1.2);
+
+        % Cap lines
+        plot([i-0.15, i+0.15], [meanVals(i)+ci, meanVals(i)+ci], '-', ...
+            'Color', [0.35 0.35 0.35], 'LineWidth', 1.2);
+        plot([i-0.15, i+0.15], [meanVals(i)-ci, meanVals(i)-ci], '-', ...
+            'Color', [0.35 0.35 0.35], 'LineWidth', 1.2);
+
+        % Dot
+        scatter(i, meanVals(i), 60, clr, 'filled', ...
+            'MarkerEdgeColor', [0.3 0.3 0.3], 'LineWidth', 0.8);
+    end
+
+    % Significance stars
+    for j = 1:nVars
         starStr = '';
-        if pVal(j) < 0.001, starStr = '***';
-        elseif pVal(j) < 0.01, starStr = '**';
-        elseif pVal(j) < 0.05, starStr = '*'; 
+        if     pV(j) < 0.001, starStr = '***';
+        elseif pV(j) < 0.01,  starStr = '**';
+        elseif pV(j) < 0.05,  starStr = '*';
         end
-        
-        if ~isempty(starStr)     
-            offset = 0.05;             
-            if meanVal(j) >= 0
-                x_pos = meanVal(j) + seVal(j) + offset;
-                ha = 'left'; 
+        if ~isempty(starStr)
+            ci = 1.96 * seVals(j);
+            if meanVals(j) >= 0
+                y_pos = meanVals(j) + ci + 0.06;
+                va = 'bottom';
             else
-                x_pos = meanVal(j) - seVal(j) - offset;
-                ha = 'right'; 
+                y_pos = meanVals(j) - ci - 0.06;
+                va = 'top';
             end
-            text(x_pos, y(j)-0.04, starStr, 'FontSize', 12, ...
-                'HorizontalAlignment', ha, 'VerticalAlignment', 'middle'); 
+            text(j, y_pos, starStr, 'FontSize', 10, ...
+                'HorizontalAlignment', 'center', 'VerticalAlignment', va);
         end
     end
+
+    % Axes formatting
+    set(gca, 'XTick', 1:nVars, 'XTickLabel', labs, ...
+        'FontSize', 11, 'Box', 'off', 'TickDir', 'out');
+    xtickangle(45);
+    xlim([0.5, nVars + 0.5]);
+    ylim([-1.1, 1.1]);
+    title(titles{panel}, 'FontSize', 12, 'FontWeight', 'bold');
+
+    if panel == 1
+        yticks(-0.9:0.3:0.9);
+        ylabel('Standardized deviations (Z-score)', 'FontSize', 11);
+        catNames = {'Climate','Vegetation','Terrain','Ignition'};
+        catClrs  = {[246,198,175]/255, [181,212,190]/255, ...
+                    [175,212,227]/255, [184,185,210]/255};
+        for ci = 1:4
+            scatter(nan, nan, 60, catClrs{ci}, 'filled', ...
+                'MarkerEdgeColor', [0.3 0.3 0.3], ...
+                'DisplayName', catNames{ci});
+        end
+    else
+        set(gca, 'YTick', [], 'YColor', 'none');
+    end
+
+    hold off;
 end
-xline(0, 'k-', 'LineWidth', 1);
-xline(-0.5, ':', 'Color', [0.6 0.6 0.6]); 
-xlabel('Deviation of urban-edge from wildland', 'FontSize', 12);
-set(gca, 'Box', 'off', 'YColor', 'none', 'TickDir', 'out');
-xticks(-0.9:0.3:1);
-xlim([-1.3, 1]); 
-for i = 1:nVars
-    text(-1.3, i, xLabels{i}, 'HorizontalAlignment', 'left', ... 
-        'VerticalAlignment', 'middle', 'FontSize', 12);
+set(gcf, 'Color', 'w');
+
+
+catNames = {'Climate','Vegetation','Terrain','Ignition'};
+catClrs  = {[246,198,175]/255, [181,212,190]/255, ...
+            [175,212,227]/255, [184,185,210]/255};
+
+ax_leg = axes('Position', [0.15, 0.01, 0.70, 0.08]);
+hold on;
+
+nCat  = numel(catNames);
+xPos  = linspace(0.15, 0.85, nCat); 
+
+set(ax_leg, 'XLim', [0 1], 'YLim', [0 1], ...
+    'Visible', 'off');  
+rectangle('Position', [0, 0, 1, 1], ...
+    'EdgeColor', [0.75 0.75 0.75], 'LineWidth', 0.8, 'FaceColor', 'none');
+
+for ci = 1:nCat
+    scatter(ax_leg, xPos(ci), 0.5, 60, catClrs{ci}, 'filled', ...
+        'MarkerEdgeColor', [0.3 0.3 0.3], 'LineWidth', 0.8);
+
+    % Text label
+    text(ax_leg, xPos(ci) + 0.04, 0.5, catNames{ci}, ...
+        'FontSize', 11, ...
+        'VerticalAlignment', 'middle', ...
+        'HorizontalAlignment', 'left');
 end
-lgd = legend([b(2), b(1)], {'ShrubGrass', 'Forest'}, ...
-    'Location', 'southeast', 'Box', 'off', 'FontSize', 11);
-lgd.ItemTokenSize = [15, 18];
-lgd.Position(2) = lgd.Position(2) + 0.08;
+
 hold off;
+
+set(gcf, 'Color', 'w');
 exportgraphics(gcf, 'Fig/Fig3B.png');
-%% NDVI calculation, Forest and ShrubGrass
-lcs      = {'Forest', 'ShrubGrass'};              nlc  = numel(lcs);
-decades  = {'1990s', '2000s', '2010s', '2020s'};  nDec  = numel(decades);
-fireType = {'Urban-edge','Wildland'};             nFire = numel(fireType);
-colors   = {[216, 118, 89]/255; [41, 157, 143]/255};
-data     = shaperead('dataPrc/firePrmt/CalFire.shp');
-ndviAll  = [data.ndviM]';
-lc       = {data.lndcvr}';
-Dec      = {data.decade}';
-Fire     = {data.FireType}';
-
-figure('Position', [100, 100, 500, 500]); 
-t = tiledlayout(nDec-1, nlc, 'TileSpacing', 'compact', 'Padding', 'compact');
-binW = 0.02;
-edge = 0:binW:1;
-xFit = 0:0.005:1; 
-for d = 2:nDec
-    for l = 1:nlc
-        ax = nexttile;
-        hold(ax, 'on');        
-        if l == 1, maskLC = strcmp(lc, 'forest');
-        else, maskLC = strcmp(lc, 'shrub') | strcmp(lc, 'grass'); end
-        urbanVals = []; wildVals = [];        
-        for i = 1:nFire
-            mask = maskLC & strcmp(Fire, fireType{i}) & strcmp(Dec, decades{d}) & ~isnan(ndviAll);
-            ndvi = ndviAll(mask);
-            if i == 1, urbanVals = ndvi; else, wildVals = ndvi; end
-            
-            mu = mean(ndvi); sigma = std(ndvi);
-            histogram(ax, ndvi, 'BinEdges', edge, 'Normalization', 'probability', ...
-                'FaceColor', 0.8*colors{i}, 'EdgeColor', 'none', 'FaceAlpha', 0.2, ...
-                'HandleVisibility', 'off');
-            yFit = normpdf(xFit, mu, sigma) * binW;
-            plot(ax, xFit, yFit, 'Color', colors{i}, 'LineWidth', 1.5, ...
-                'DisplayName', fireType{i});            
-            xline(ax, mu, 'LineWidth', 1.5, 'LineStyle', ':', ...
-                'Color', colors{i}, 'HandleVisibility', 'off');
-        end        
-        [~, p_val] = ttest2(urbanVals, wildVals, 'Vartype', 'unequal');
-        if p_val < 0.01, pStr = '{\it p} < 0.01'; 
-        else, pStr = sprintf('{\\it p} = %.2f', p_val); end
-        text(ax, -0.02, 0.5, pStr, 'Units', 'normalized');
-        xlabel('NDVI');
-        xlim(ax, [0.1 1]); 
-        ylim(ax, [0 0.15]); 
-        if d == 2, title(ax, lcs{l}, 'FontWeight','normal'); end        
-        if l ~= 1, ax.YAxis.Visible = 'off';
-            text(ax, 0.95, 0.70, decades{d}, 'Units', 'normalized', ...
-                'HorizontalAlignment', 'right'); 
-        end        
-        if d ~= nDec, xticks(ax, []); end
-        set(ax, 'FontSize', 10, 'TickDir', 'out', 'Box', 'off');
-
-        if d == 3 && l == 1
-            lgd = legend(ax, 'Location', 'northwest', 'Box', 'off');
-            lgd.ItemTokenSize = [15, 15];
-        end
-    end
-end
-ylabel(t, 'Probability');
-exportgraphics(gcf, 'Fig/Fig5B.png');
+exportgraphics(gcf, 'Fig/Fig3B.pdf');

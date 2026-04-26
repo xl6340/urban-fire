@@ -2,7 +2,8 @@ clear; clc;
 
 dataSrc  = {'CalFire', 'MTBS', 'Atlas', 'FIRED'}; 
 nSrc     = numel(dataSrc);
-FireType = {'Urban-edge', 'Wildland'};           
+FireType = {'Urban-edge', 'Wildland'};     
+FireTypeLabel = {'WUI', 'Wildland'};
 nFire    = numel(FireType);
 color    = {[216, 118, 89]/255; [41, 157, 143]/255}; 
 
@@ -19,7 +20,7 @@ for i = 1:nSrc
  
         if i == 1
             hLeg(j) = plot(NaN, NaN, '-o', 'Color', color{j}, 'MarkerFaceColor', color{j}, ...
-                'MarkerSize', 6, 'DisplayName', FireType{j});
+                'MarkerSize', 6, 'DisplayName', FireTypeLabel{j});
         end
 
         if isfile(fNameData)

@@ -62,7 +62,7 @@ end
 %% beta for 4-datasets, 2-fireTypes (OLS vs MLE + Bootstrap + Risk Prob)
 clear; clc;
 dataSrc  = {'CalFire', 'MTBS', 'Atlas', 'FIRED'};   nSrc  = numel(dataSrc);
-fireType = {'Urban-edge','Wildland'};               nFire = numel(fireType);
+fireType = {'WUI','Wildland'};               nFire = numel(fireType);
 edges    = 10 .^ (-1:0.05:5);                       % Bins for visualization
 nBoot    = 1000;                                    % Bootstrap iterations
 dirs = {'dataFig/curve', 'dataFig/beta', ...
@@ -187,9 +187,9 @@ for i = 1:nSrc
     % =================================================================
     % SIGNIFICANCE TEST: BOOTSTRAP (MLE & OLS)
     % =================================================================
-    idx_urb = find(strcmp(fireType, 'Urban-edge'));
+    idx_urb = find(strcmp(fireType, 'WUI'));
     idx_wld = find(strcmp(fireType, 'Wildland'));
-    sz_urb = SizeVec(strcmp(FireVec, 'Urban-edge'));
+    sz_urb = SizeVec(strcmp(FireVec, 'WUI'));
     sz_wld = SizeVec(strcmp(FireVec, 'Wildland'));
     
     if ~isempty(sz_urb) && ~isempty(sz_wld)
@@ -302,7 +302,7 @@ clear; clc;
 
 dataSrc  = {'CalFire', 'MTBS', 'Atlas', 'FIRED'};   nSrc  = numel(dataSrc);
 decades  = {'1990s', '2000s', '2010s', '2020s'};    nDec  = numel(decades);
-fireType = {'Urban-edge','Wildland'};               nFire = numel(fireType);
+fireType = {'WUI','Wildland'};               nFire = numel(fireType);
 count    = NaN(nSrc, nDec, nFire);
 area     = NaN(nSrc, nDec, nFire);
 alfa     = NaN(nSrc, nDec, nFire);
@@ -367,7 +367,7 @@ end
 %% beta for CalFire, 2-fireTypes, 2-ignition
 clear; clc;
 
-fireType = {'Urban-edge','Wildland'}; nFire = numel(fireType);
+fireType = {'WUI','Wildland'}; nFire = numel(fireType);
 igType   = {'Human', 'Natural'};      nIg   = numel(igType);
 
 data = shaperead('dataPrc/firePrmt/CalFire.shp');
@@ -421,7 +421,7 @@ for i = 1:nFire
 end
 %% beta for CalFire, 4-decade, 2-ignition
 clear; clc;
-fireType = {'Urban-edge','Wildland'}; 
+fireType = {'WUI','Wildland'}; 
 decades  = {'1990s', '2000s', '2010s', '2020s'};  nDec  = numel(decades);
 igType   = {'Human', 'Natural'};                  nIg   = numel(igType);
 
@@ -486,7 +486,7 @@ edges{1} = 10.^(-1:0.05:2);
 edges{2} = 10.^(-1:0.05:3); 
 edges{3} = 10.^(-1:0.05:5); 
 
-fireType = {'Urban-edge','Wildland'};               nFire = numel(fireType);
+fireType = {'WUI','Wildland'};               nFire = numel(fireType);
 decades  = {'1990s', '2000s', '2010s', '2020s'};    nDec  = numel(decades);
 nBoot    = 1000; % Bootstrap iterations
 
@@ -579,7 +579,7 @@ for i = 1:nEdge
     max_val = max(current_edges);
     
     for d = 1:nDec
-        sz_u = Size(strcmp(Fire, 'Urban-edge') & strcmp(Dec, decades{d}));
+        sz_u = Size(strcmp(Fire, 'WUI') & strcmp(Dec, decades{d}));
         sz_w = Size(strcmp(Fire, 'Wildland') & strcmp(Dec, decades{d}));
         
         sz_u = sz_u(sz_u <= max_val);
@@ -647,7 +647,7 @@ end
 writetable(res_Bootstrap, 'dataFig/beta/Significance_Summary_Cutoffs.csv');
 %% climate, CalFire
 varNames = {'tmean', 'vpdmax','tmin', 'tmax'}; nvar = numel(varNames);
-fireType = {'Urban-edge','Wildland'};          nFire = numel(fireType);
+fireType = {'WUI','Wildland'};          nFire = numel(fireType);
 
 data = shaperead('dataPrc/firePrmt/CalFire.shp');
 Fire = {data.FireType}';
@@ -661,7 +661,7 @@ for i =1:nvar
     Var_u(:,i) = [data_u.(varNames{i})]';
     Var_w(:,i) = [data_w.(varNames{i})]';
 end
-writetable(array2table(Var_u, 'VariableNames', string(varNames)),'dataFig/climate/Urban-edge.csv');
+writetable(array2table(Var_u, 'VariableNames', string(varNames)),'dataFig/climate/WUI.csv');
 writetable(array2table(Var_w, 'VariableNames', string(varNames)),'dataFig/climate/Wildland.csv');
 %% NDVI, CalFire
 ndviAll = [data.ndviM]';
@@ -674,7 +674,7 @@ end
 %% year: fire number & burned area, CalFire
 igType   = {'Human', 'Natural'};      nIg   = numel(igType);
 years = 1990:2024;                    nyr = numel(years);
-fireType = {'Urban-edge','Wildland'}; nFire = numel(fireType);
+fireType = {'WUI','Wildland'}; nFire = numel(fireType);
 
 data = shaperead('dataPrc/firePrmt/CalFire_fullSize.shp');
 Size = [data.size]';
@@ -738,7 +738,7 @@ writetable(results, 'dataFig/ba/fractions.csv', "WriteRowNames", true);
 clear; clc;
 
 lc       = {'Forest', 'ShrubGrass'};                    nlc   = numel(lc);
-fireType = {'Urban-edge','Wildland'};                   nFire = numel(fireType);
+fireType = {'WUI','Wildland'};                   nFire = numel(fireType);
 varName  = {'ndviM', 'elevation', 'slope', 'vs', 'vd', ... 
             'ppt', 'tmean', 'vpdmax','tmin', 'tmax', 'ignition'};   nvar  = numel(varName);
 
@@ -783,7 +783,7 @@ Tmins      = [data.tmin]';
 VPDmaxs    = [data.vpdmax]' / 10; % Convert VPD from hPa to kPa
 
 lc        = {'Forest', 'Shrub', 'Grass'};                                         
-fireType  = {'Urban-edge','Wildland'};              
+fireType  = {'WUI','Wildland'};              
 nFire     = numel(fireType);
 nBins     = 8; 
 
@@ -846,6 +846,6 @@ for v = 1:5
     dataMean = squeeze(valMean(:,:,v))'; 
     dataErr  = squeeze(valErr(:,:,v))';     
     T = array2table([dataMean, dataErr], ...
-        'VariableNames', {'Mean_Urban-edge', 'Mean_Wildland', 'Err_Urban-edge', 'Err_Wildland'});
+        'VariableNames', {'Mean_WUI', 'Mean_Wildland', 'Err_WUI', 'Err_Wildland'});
     writetable(T, sprintf('dataFig/elevation/%s.csv', variable{v}));
 end
