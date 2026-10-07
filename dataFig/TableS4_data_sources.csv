@@ -1,0 +1,18 @@
+Dataset,Data type,Period,Source
+CalFire,Fire perimeters,1900--2025,https://www.fire.ca.gov/what-we-do/fire-resource-assessment-program/fire-perimeters
+MTBS,Fire perimeters,1987--2024,https://www.mtbs.gov/direct-download
+Atlas,"Fire perimeters, ignition location",2002--2025,https://zenodo.org/records/14065246
+FIRED,Fire perimeters,2000--2024,https://scholar.colorado.edu/concern/datasets/fx719p11c
+MCD64A1,Burned area,2001--2024,https://developers.google.com/earth-engine/datasets/catalog/MODIS_061_MCD64A1
+Radeloff (2023),WUI,1990--2020,https://www.fs.usda.gov/rds/archive/catalog/RDS-2015-0012-4
+MCD12Q1,Landcover,2002--2025,https://developers.google.com/earth-engine/datasets/catalog/MODIS_061_MCD12Q1#description
+MOD13Q1,NDVI,1985--2025,https://developers.google.com/earth-engine/datasets/catalog/MODIS_061_MOD13Q1#description
+RAP,Shrub and herbaceous NPP,1986--2021,https://rangelands.app/products/
+ESA CCI AGB,Tree aboveground biomass,2007; 2010; 2015--2022,https://developers.google.com/earth-engine/datasets/catalog/ESA_CCI_Above_Ground_Biomass_V6_0
+PRISM,"Tmean, VPDmax, Tmin, Tmax",1985--2025,https://prism.oregonstate.edu
+gridMET,"Precipitation, wind speed",1979--2025,https://www.northwestknowledge.net/metdata/data/
+R1D-SAWRI,Daily Santa Ana Wind Regional Index,1948--2018,https://doi.org/10.6075/j0cv4hx9
+NLDN,Cloud-to-ground lightning,1999--2025,https://www.vaisala.com/en/products/national-lightning-detection-network-nldn
+NASADEM,"Elevation, slope",2000,https://developers.google.com/earth-engine/datasets/catalog/NASA_NASADEM_HGT_001
+CalFire,Wildfire protection facility,2025,https://data.ca.gov/dataset/facilities-for-wildland-fire-protection
+Data.GOV,California boundary,2023,https://catalog.data.gov/dataset/ca-geographic-boundaries

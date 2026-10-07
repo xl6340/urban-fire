@@ -1,0 +1,5 @@
+Regime,Cause,Fire count,Burned area,alpha,beta,beta_Err,Sig,R2,xmin,beta_MLE,beta_Err_MLE
+WUI fires,Human,621,34178,0.42,-1.4,0.02,p < 0.01,0.99,1.0,-1.46,0.02
+WUI fires,Lightning,134,22414,0.16,-1.05,0.03,p < 0.01,0.95,1.04,-1.29,0.02
+Wildland fires,Human,801,8505,0.71,-1.71,0.03,p < 0.01,0.99,1.0,-1.76,0.03
+Wildland fires,Lightning,687,16817,0.53,-1.5,0.03,p < 0.01,0.98,1.0,-1.53,0.02
